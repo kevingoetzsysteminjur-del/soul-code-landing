@@ -129,34 +129,6 @@ a{text-decoration:none;color:inherit}
 .s3{width:100px;top:8%; right:15%;animation:shoot 15s ease-in 10s infinite}
 @keyframes shoot{0%{opacity:0;transform:translate(0,0) rotate(35deg)}2%{opacity:1}8%{opacity:0;transform:translate(-300px,200px) rotate(35deg)}100%{opacity:0}}
 
-/* --- Guilloché Muster-Partikel --- */
-#guilloche-particles{position:absolute;inset:0;pointer-events:none}
-.gp{position:absolute;pointer-events:none;opacity:0}
-.gp-spin{width:100%;height:100%}
-.gp-spin svg{width:100%;height:100%;display:block}
-@keyframes gpFadeIn{0%{opacity:0}100%{opacity:var(--op,1)}}
-@keyframes spinCW  {to{transform:rotate( 360deg)}}
-@keyframes spinCCW {to{transform:rotate(-360deg)}}
-@keyframes gpLeft{
-  0%  {transform:translateX(110vw) translateY(0)}
-  100%{transform:translateX(-40vw) translateY(0)}
-}
-@keyframes gpRight{
-  0%  {transform:translateX(-40vw) translateY(0)}
-  100%{transform:translateX(110vw) translateY(0)}
-}
-@keyframes gpDiagDown{
-  0%  {transform:translateX(-30vw) translateY(-20vh)}
-  100%{transform:translateX(110vw) translateY(60vh)}
-}
-@keyframes gpDiagUp{
-  0%  {transform:translateX(110vw) translateY(50vh)}
-  100%{transform:translateX(-30vw) translateY(-10vh)}
-}
-@keyframes gpDown{
-  0%  {transform:translateX(0) translateY(-20vh)}
-  100%{transform:translateX(0) translateY(110vh)}
-}
 
 /* ================================================================
    LAYER WRAPPER + SECTION Z-INDEX
@@ -798,7 +770,6 @@ footer{
   <div class="shooting-star s1"></div>
   <div class="shooting-star s2"></div>
   <div class="shooting-star s3"></div>
-  <div id="guilloche-particles"></div>
 </div>
 
 <!-- INFO BANNER -->
@@ -1500,82 +1471,6 @@ window.submitAnalysis = function(e) {
     setTimeout(function(){ btn.textContent = orig; btn.style.background = ''; btn.disabled = false; e.target.reset(); }, 4000);
   }, 1800);
 };
-
-/* ================================================================
-   7. GUILLOCHÉ MUSTER — FLIEGENDE PARTIKEL
-================================================================ */
-(function() {
-  var cont = document.getElementById('guilloche-particles');
-  if (!cont) return;
-
-  /* Muster-Generator — drei Typen aus dem Referenzbild */
-  function makeSVG(type, strokeColor, strokeColor2) {
-    var paths = '';
-    var vb = '-70 -70 140 140';
-    strokeColor  = strokeColor  || '#C9A84C';
-    strokeColor2 = strokeColor2 || strokeColor;
-
-    if (type === 0) {
-      /* Typ A: 8-zackiger Stern (viele dünne Ellipsen rotiert 0-175°) */
-      for (var i = 0; i < 36; i++) {
-        var a = i * 5; /* 5° Schritte → 0-175° */
-        paths += '<ellipse cx="0" cy="0" rx="58" ry="7" fill="none" stroke="'+strokeColor+'" stroke-width="1.2" transform="rotate('+a+')"/>';
-      }
-    } else if (type === 1) {
-      /* Typ B: Ring-Muster (Ellipsen mit mittlerem ry → Kranz/Donut) */
-      for (var i = 0; i < 40; i++) {
-        var a = i * 4.5; /* 0-175.5° */
-        paths += '<ellipse cx="0" cy="0" rx="54" ry="24" fill="none" stroke="'+strokeColor+'" stroke-width="1.1" transform="rotate('+a+')"/>';
-      }
-      /* Extra innere Linien für Dichte */
-      for (var i = 0; i < 20; i++) {
-        var a = i * 9;
-        paths += '<ellipse cx="0" cy="0" rx="48" ry="28" fill="none" stroke="'+strokeColor2+'" stroke-width="0.8" opacity="0.6" transform="rotate('+a+')"/>';
-      }
-    } else {
-      /* Typ C: 4-zackiger Stern / Kreuz (enge Ellipsen, 0-87.5°) */
-      for (var i = 0; i < 24; i++) {
-        var a = i * (90/24); /* 0-87.5° in 24 Schritten */
-        paths += '<ellipse cx="0" cy="0" rx="62" ry="6" fill="none" stroke="'+strokeColor+'" stroke-width="1.2" transform="rotate('+a+')"/>';
-      }
-    }
-
-    return '<svg viewBox="'+vb+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><g>'+paths+'</g></svg>';
-  }
-
-  /* Konfiguration: 8 Partikel
-     [type, top%, left%, size, moveDur, moveDelay, op, moveAnim, color, color2, spinDur, spinDir] */
-  var configs = [
-    [0,  8,  0,  150, 50,  0,   0.38, 'gpLeft',     '#C9A84C', null,       4, 'CW'],
-    [1, 65,  0,  130, 62,  8,   0.30, 'gpRight',    '#4AADAD', '#7B4FA0',  6, 'CCW'],
-    [2, 30, 85,  140, 44, 15,   0.35, 'gpDiagUp',   '#D94F5C', null,       5, 'CW'],
-    [0, 50, 20,  160, 55,  4,   0.28, 'gpDiagDown', '#E8A838', null,       4, 'CCW'],
-    [1, 15, 55,  120, 70, 22,   0.32, 'gpDown',     '#4A7FB5', '#C9A84C',  5, 'CW'],
-    [2, 80,  0,  110, 48,  0,   0.36, 'gpLeft',     '#D46A9F', null,       6, 'CCW'],
-    [0, 42, 40,  145, 60, 12,   0.27, 'gpRight',    '#E8D48B', null,       4, 'CW'],
-    [1, 20,  0,  170, 40, 30,   0.30, 'gpDiagDown', '#7B4FA0', '#4AADAD',  5, 'CCW'],
-  ];
-
-  var html = '';
-  configs.forEach(function(c) {
-    var type=c[0], top=c[1], left=c[2], size=c[3];
-    var moveDur=c[4], moveDelay=c[5], op=c[6], moveAnim=c[7];
-    var col=c[8], col2=c[9], spinDur=c[10], spinDir=c[11];
-    html += '<div class="gp" style="'
-      + 'top:'  + top  + '%;'
-      + 'left:' + left + '%;'
-      + 'width:'  + size + 'px;'
-      + 'height:' + size + 'px;'
-      + '--op:' + op + ';'
-      + 'animation:' + moveAnim + ' ' + moveDur + 's linear ' + moveDelay + 's infinite,'
-      +              ' gpFadeIn 2s ease 3s 1 normal forwards;'
-      + '">'
-      + '<div class="gp-spin" style="animation:spin' + spinDir + ' ' + spinDur + 's linear infinite;">'
-      + makeSVG(type, col, col2)
-      + '</div></div>';
-  });
-  cont.innerHTML = html;
-}());
 
 })();
 </script>
